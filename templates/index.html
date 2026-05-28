@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Recognition - Klasifikasi Spesies Kayu</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans untuk Tipografi Premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome untuk Icon Set Premium -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(17, 24, 39, 0.6);
+            --primary: #06b6d4; /* Neon Cyan */
+            --primary-glow: rgba(6, 182, 212, 0.45);
+            --secondary: #8b5cf6; /* Neon Purple */
+            --secondary-glow: rgba(139, 92, 246, 0.4);
+            --accent-green: #10b981; /* Emerald Green */
+            --accent-green-glow: rgba(16, 185, 129, 0.3);
+            --text-light: #f3f4f6;
+            --text-gray: #9ca3af;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(9, 13, 22, 1) 0%, rgba(5, 7, 12, 1) 100%);
+            background-attachment: fixed;
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.8s var(--transition);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--primary) 70%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 10px 30px rgba(6, 182, 212, 0.15);
+        }
+
+        header p {
+            color: var(--text-gray);
+            font-size: 1.05rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            animation: fadeInUp 0.8s var(--transition) 0.1s both;
+        }
+
+        @media (max-width: 968px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glassmorphism Card Style */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.01),
+                rgba(255, 255, 255, 0.02),
+                transparent
+            );
+            transform: skewX(-25deg);
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .glass-card:hover::before {
+            left: 100%;
+            transition: 1.2s ease-in-out;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .section-title i {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Mode Selector Tab */
+        .selector-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px;
+            border-radius: 50px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            z-index: 2;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+        }
+
+        /* Voice Recorder Area */
+        .recorder-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+            position: relative;
+        }
+
+        .record-btn-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .record-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            z-index: 1;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .recording .record-ring {
+            animation: pulse-glow 1.5s infinite;
+            opacity: 1;
+        }
+
+        .record-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 1px 3px rgba(255,255,255,0.1);
+            transition: var(--transition);
+            outline: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 30px var(--primary-glow);
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-color: #fff;
+        }
+
+        .recording .record-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            border-color: #fca5a5;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+            transform: scale(0.96);
+        }
+
+        .status-text {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-gray);
+            margin-top: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .recording .status-text {
+            color: #f87171;
+            animation: blink 1.2s infinite;
+        }
+
+        .rec-instruction {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-top: 0.4rem;
+            opacity: 0.7;
+        }
+
+        /* Waveform Canvas */
+        .visualizer-container {
+            width: 100%;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            margin-top: 1.5rem;
+            overflow: hidden;
+            display: none; /* muncul ketika merekam */
+            position: relative;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Drag & Drop File Upload Area */
+        .upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            min-height: 250px;
+        }
+
+        .upload-wrapper:hover, .upload-wrapper.drag-over {
+            border-color: var(--primary);
+            background: rgba(6, 182, 212, 0.04);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.05);
+        }
+
+        .upload-wrapper i {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .upload-wrapper:hover i {
+            transform: translateY(-5px);
+        }
+
+        .upload-wrapper h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-wrapper p {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* File Preview */
+        .file-preview {
+            display: none;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-top: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeIn 0.4s var(--transition);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            overflow: hidden;
+        }
+
+        .file-info i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .file-details {
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .file-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px var(--primary-glow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-remove-file {
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .btn-remove-file:hover {
+            color: #ef4444;
+        }
+
+        /* Stepper Flow Progress */
+        .stepper-container {
+            margin-top: 2rem;
+            display: none; /* Muncul ketika loading pemrosesan */
+            animation: fadeIn 0.5s var(--transition);
+        }
+
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .step-item i {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-gray);
+            transition: var(--transition);
+        }
+
+        .step-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .step-item.active i {
+            background: var(--primary-glow);
+            border-color: var(--primary);
+            color: #fff;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        .step-item.completed {
+            color: var(--accent-green);
+        }
+
+        .step-item.completed i {
+            background: var(--accent-green-glow);
+            border-color: var(--accent-green);
+            color: #fff;
+        }
+
+        /* Interactive Result Panel */
+        .result-container {
+            display: none; /* Muncul setelah berhasil deteksi */
+            margin-top: 2rem;
+            animation: slideInUp 0.6s var(--transition);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 20px;
+            padding: 1.8rem;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+            text-align: center;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-icon {
+            font-size: 2.2rem;
+            color: var(--accent-green);
+            background: var(--accent-green-glow);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--accent-green-glow);
+            border: 1px solid var(--accent-green);
+        }
+
+        .result-titles {
+            text-align: left;
+        }
+
+        .result-titles h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-gray);
+        }
+
+        .result-titles h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Circular Score Indicator */
+        .score-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .gauge-svg {
+            transform: rotate(-90deg);
+            width: 100px;
+            height: 100px;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255,255,255,0.05);
+            stroke-width: 8;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: url(#gaugeGradient);
+            stroke-width: 8;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .gauge-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .gauge-value span {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .gauge-value p {
+            font-size: 0.65rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+        }
+
+        /* Text Mapping Panel */
+        .quote-box {
+            background: rgba(0, 0, 0, 0.25);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 16px 16px 0;
+            padding: 1.2rem;
+            text-align: left;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .quote-box i.fa-quote-left {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.02);
+            pointer-events: none;
+        }
+
+        .quote-text {
+            font-size: 0.98rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-light);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Custom Premium Player */
+        .audio-player-wrapper {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 0.6rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .player-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-play-pause {
+            background: var(--primary);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px var(--primary-glow);
+            transition: var(--transition);
+        }
+
+        .btn-play-pause:hover {
+            transform: scale(1.1);
+            background: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary-glow);
+        }
+
+        .audio-wave-anim {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 15px;
+        }
+
+        .audio-wave-anim span {
+            width: 2.5px;
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .playing .audio-wave-anim span {
+            animation: bounce-wave 0.8s infinite ease-in-out alternate;
+        }
+
+        .playing .audio-wave-anim span:nth-child(2) { animation-delay: 0.15s; }
+        .playing .audio-wave-anim span:nth-child(3) { animation-delay: 0.3s; }
+        .playing .audio-wave-anim span:nth-child(4) { animation-delay: 0.45s; }
+        .playing .audio-wave-anim span:nth-child(5) { animation-delay: 0.6s; }
+
+        .player-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .btn-replay-tts {
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            padding: 0.4rem;
+        }
+
+        .btn-replay-tts:hover {
+            color: #fff;
+            transform: rotate(30deg);
+        }
+
+        /* Top 3 Predictions Styles */
+        .top-predictions-container {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid var(--glass-border);
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .top-predictions-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .top-predictions-title i {
+            color: var(--primary);
+        }
+
+        .top-prediction-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.6rem;
+            font-size: 0.9rem;
+        }
+
+        .top-prediction-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .prediction-label {
+            font-weight: 600;
+            color: var(--text-light);
+            min-width: 100px;
+        }
+
+        .prediction-bar-wrapper {
+            flex: 1;
+            margin: 0 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .prediction-bar {
+            height: 100%;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Color gradients for progress bars */
+        .prediction-bar-1 { background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+        .prediction-bar-2 { background: var(--secondary); }
+        .prediction-bar-3 { background: rgba(255,255,255,0.3); }
+
+        .prediction-percentage {
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Sidebar: Supported Wood Species List */
+        .wood-list-card {
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+        }
+
+        .wood-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* Custom Scrollbar for sidebar list */
+        .wood-grid::-webkit-scrollbar {
+            width: 5px;
+        }
+        .wood-grid::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+        .wood-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .wood-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        .wood-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 0.85rem 1.1rem;
+            transition: var(--transition);
+        }
+
+        .wood-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(6, 182, 212, 0.15);
+        }
+
+        .wood-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.05);
+        }
+
+        .wood-item:hover .wood-badge {
+            background: var(--primary-glow);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .wood-name-text {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.6; }
+            100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+
+        @keyframes bounce-wave {
+            0% { transform: scaleY(0.2); }
+            100% { transform: scaleY(1.1); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Voice Wood Classification</h1>
+        <p>Aplikasi Cerdas Pengenal Suara Klasifikasi Spesies Kayu dengan Model Jaringan Saraf Konvolusi (CNN)</p>
+    </header>
+
+    <div class="main-container">
+        <!-- Panel Utama Input & Output -->
+        <div class="glass-card">
+            <h2 class="section-title"><i class="fa-solid fa-microphone-lines"></i> Input Gelombang Suara</h2>
+            
+            <!-- Selector Tab Mode Input -->
+            <div class="selector-tabs">
+                <button class="tab-btn active" id="tab-record" onclick="switchTab('record')">
+                    <i class="fa-solid fa-microphone"></i> Rekam Langsung
+                </button>
+                <button class="tab-btn" id="tab-upload" onclick="switchTab('upload')">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Unggah Audio
+                </button>
+            </div>
+
+            <!-- Mode Rekam Langsung -->
+            <div class="recorder-wrapper" id="recorder-section">
+                <div class="record-btn-container" id="mic-container">
+                    <div class="record-ring"></div>
+                    <button class="record-btn" id="btn-mic" onmousedown="handleMicPress()" onmouseup="handleMicRelease()" ontouchstart="handleMicPress(event)" ontouchend="handleMicRelease(event)">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                </div>
+                <div class="status-text" id="record-status">Tahan tombol untuk berbicara</div>
+                <div class="rec-instruction" id="record-substatus">Mendukung perekaman hingga 3 detik secara otomatis</div>
+                
+                <!-- Audio Wave Visualizer -->
+                <div class="visualizer-container" id="visualizer-container">
+                    <canvas id="visualizer"></canvas>
+                </div>
+            </div>
+
+            <!-- Mode Unggah File -->
+            <div class="recorder-wrapper" id="upload-section" style="display: none;">
+                <div class="upload-wrapper" id="drop-zone" onclick="triggerFileSelect()">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h3>Tarik & Lepas File Audio Disini</h3>
+                    <p>Mendukung format .wav, .m4a, atau .mp3 (Maksimal 3 detik)</p>
+                    <input type="file" id="file-input" class="file-input" accept="audio/*" onchange="handleFileSelected(event)">
+                </div>
+
+                <!-- File Preview Panel -->
+                <div class="file-preview" id="file-preview">
+                    <div class="file-info">
+                        <i class="fa-solid fa-file-audio"></i>
+                        <div class="file-details">
+                            <div class="file-name" id="preview-filename">wood_sample.wav</div>
+                            <div class="file-size" id="preview-filesize">2.4 MB</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button class="btn-analyze" id="btn-analyze" onclick="uploadSelectedFile()">
+                            <i class="fa-solid fa-circle-nodes"></i> Klasifikasi Kayu
+                        </button>
+                        <button class="btn-remove-file" onclick="clearFileSelection()">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stepper Progress Flow -->
+            <div class="stepper-container" id="process-stepper">
+                <div class="stepper">
+                    <div class="step-item" id="step-1">
+                        <i>1</i> Audio Berhasil Diterima oleh Server
+                    </div>
+                    <div class="step-item" id="step-2">
+                        <i>2</i> Konversi Format Audio via Pydub ke WAV
+                    </div>
+                    <div class="step-item" id="step-3">
+                        <i>3</i> Ekstraksi Ciri Akustik MFCC (Librosa)
+                    </div>
+                    <div class="step-item" id="step-4">
+                        <i>4</i> Klasifikasi Gambar Fitur oleh Model CNN
+                    </div>
+                    <div class="step-item" id="step-5">
+                        <i>5</i> Pemetaan Kelas ke Kalimat Bahasa Indonesia
+                    </div>
+                    <div class="step-item" id="step-6">
+                        <i>6</i> Suara Respons gTTS Berhasil Disintesis
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Hasil Klasifikasi & Respons TTS -->
+            <div class="result-container" id="result-section">
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-icon">
+                            <i class="fa-solid fa-tree"></i>
+                        </div>
+                        <div class="result-titles">
+                            <h4>Spesies Terklasifikasi</h4>
+                            <h2 id="result-wood-name">Kayu Jati</h2>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <!-- SVG Circular Confidence Score Gauge -->
+                        <div class="gauge-container">
+                            <svg class="gauge-svg" viewBox="0 0 100 100">
+                                <defs>
+                                    <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="var(--primary)" />
+                                        <stop offset="100%" stop-color="var(--secondary)" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="gauge-bg" cx="50" cy="50" r="45" />
+                                <circle class="gauge-fill" id="confidence-circle" cx="50" cy="50" r="45" />
+                            </svg>
+                            <div class="gauge-value">
+                                <span id="result-confidence">98.5%</span>
+                                <p>Akurasi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mapped Indonesian Sentence -->
+                    <div class="quote-box">
+                        <i class="fa-solid fa-quote-left"></i>
+                        <p class="quote-text" id="result-sentence">Kayu jati diidentifikasi. Merupakan jenis kayu tahan serangan rayap yang luar biasa.</p>
+                    </div>
+
+                    <!-- 3 Prediksi Akurasi Teratas -->
+                    <div class="top-predictions-container">
+                        <div class="top-predictions-title">
+                            <i class="fa-solid fa-chart-bar"></i> 3 Prediksi Teratas
+                        </div>
+                        <div id="top-predictions-list">
+                            <!-- Diisi dinamis oleh JS -->
+                        </div>
+                    </div>
+
+                    <!-- Custom TTS Player -->
+                    <div class="audio-player-wrapper" id="custom-player">
+                        <div class="player-left">
+                            <button class="btn-play-pause" onclick="togglePlayPause()" id="play-pause-icon">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <div class="audio-wave-anim" id="wave-anim">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <div class="player-status" id="player-status">Memutar suara respons...</div>
+                        </div>
+                        <button class="btn-replay-tts" onclick="replayAudio()" title="Putar Ulang Kalimat">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Supported Wood Species List -->
+        <div class="glass-card wood-list-card">
+            <h2 class="section-title"><i class="fa-solid fa-database"></i> Spesies Didukung</h2>
+            <div class="wood-grid">
+                {% for wood in class_list %}
+                <div class="wood-item">
+                    <div class="wood-badge">{{ loop.index }}</div>
+                    <div class="wood-name-text">Kayu {{ wood }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentTab = 'record';
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordTimeout = null;
+        let isRecording = false;
+        let selectedFile = null;
+        
+        // Web Audio API variables for visualizer
+        let audioContext = null;
+        let analyser = null;
+        let dataArray = null;
+        let sourceNode = null;
+        let animationFrameId = null;
+        
+        // Global Audio Object for TTS response
+        let ttsAudio = null;
+
+        // Switch Tabs (Record vs Upload)
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-record').classList.toggle('active', tab === 'record');
+            document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+            
+            document.getElementById('recorder-section').style.display = tab === 'record' ? 'flex' : 'none';
+            document.getElementById('upload-section').style.display = tab === 'upload' ? 'flex' : 'none';
+            
+            // Hentikan perekaman jika berpindah tab
+            if (tab === 'upload' && isRecording) {
+                stopRecording();
+            }
+        }
+
+        // --- Perekaman Audio ---
+        
+        function handleMicPress(e) {
+            if (e) e.preventDefault(); // Mencegah scrolling/zoom di mobile
+            if (isRecording) return;
+            startRecording();
+        }
+
+        function handleMicRelease(e) {
+            if (e) e.preventDefault();
+            if (!isRecording) return;
+            stopRecording();
+        }
+
+        async function startRecording() {
+            audioChunks = [];
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                isRecording = true;
+                
+                // Ganti UI State ke Recording
+                document.getElementById('recorder-section').classList.add('recording');
+                document.getElementById('record-status').innerText = "Mendengarkan... Lepas untuk kirim";
+                document.getElementById('record-substatus').innerText = "Merekam suara Anda (Maksimal 3 detik)";
+                
+                // Tampilkan visualizer
+                document.getElementById('visualizer-container').style.display = 'block';
+                setupVisualizer(stream);
+
+                // Buat MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    uploadAudio(audioBlob);
+                    
+                    // Hentikan semua track audio
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+
+                // Maksimal rekam 3 detik secara otomatis
+                recordTimeout = setTimeout(() => {
+                    if (isRecording) {
+                        stopRecording();
+                    }
+                }, 3000);
+
+            } catch (err) {
+                console.error("Gagal mengakses mikrofon:", err);
+                alert("Tidak dapat mengakses mikrofon. Pastikan Anda memberikan izin akses.");
+                resetMicUI();
+            }
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+            
+            clearTimeout(recordTimeout);
+            
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            
+            resetMicUI();
+            
+            // Hentikan visualizer animation
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        }
+
+        function resetMicUI() {
+            document.getElementById('recorder-section').classList.remove('recording');
+            document.getElementById('record-status').innerText = "Tahan tombol untuk berbicara";
+            document.getElementById('record-substatus').innerText = "Mendukung perekaman hingga 3 detik secara otomatis";
+            document.getElementById('visualizer-container').style.display = 'none';
+        }
+
+        // --- Web Audio API Visualizer ---
+        function setupVisualizer(stream) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            
+            sourceNode = audioContext.createMediaStreamSource(stream);
+            sourceNode.connect(analyser);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            
+            const canvas = document.getElementById('visualizer');
+            const canvasCtx = canvas.getContext('2d');
+            
+            // Menyesuaikan ukuran canvas internal dengan elemen sebenarnya
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            function draw() {
+                if (!isRecording) return;
+                
+                animationFrameId = requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+                
+                canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const barWidth = (canvas.width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+                
+                for(let i = 0; i < bufferLength; i++) {
+                    barHeight = dataArray[i] / 2.3;
+                    
+                    // Gradasi warna Cyan ke Ungu
+                    const percent = i / bufferLength;
+                    const r = Math.floor(6 + (139 - 6) * percent);
+                    const g = Math.floor(182 + (92 - 182) * percent);
+                    const b = Math.floor(212 + (246 - 212) * percent);
+                    
+                    canvasCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    
+                    // Menggambar bar dari tengah
+                    const y = (canvas.height - barHeight) / 2;
+                    canvasCtx.fillRect(x, y, barWidth - 1, barHeight);
+                    
+                    x += barWidth;
+                }
+            }
+            
+            draw();
+        }
+
+        // --- File Upload Handling ---
+        
+        function triggerFileSelect() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelected(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                showFilePreview(selectedFile);
+            }
+        }
+
+        function showFilePreview(file) {
+            document.getElementById('drop-zone').style.display = 'none';
+            document.getElementById('file-preview').style.display = 'flex';
+            
+            document.getElementById('preview-filename').innerText = file.name;
+            
+            // Format ukuran file
+            const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+            document.getElementById('preview-filesize').innerText = sizeInMB + " MB";
+        }
+
+        function clearFileSelection() {
+            selectedFile = null;
+            document.getElementById('file-input').value = "";
+            document.getElementById('drop-zone').style.display = 'flex';
+            document.getElementById('file-preview').style.display = 'none';
+            
+            // Sembunyikan hasil lama jika ada file baru dihapus
+            document.getElementById('result-section').style.display = 'none';
+        }
+
+        // Drag & Drop visual state
+        const dropZone = document.getElementById('drop-zone');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                showFilePreview(selectedFile);
+            }
+        });
+
+        // --- API Upload & Processing ---
+
+        function uploadAudio(blob) {
+            const file = new File([blob], "recorded_voice.webm", { type: "audio/webm" });
+            performPrediction(file);
+        }
+
+        function uploadSelectedFile() {
+            if (!selectedFile) return;
+            performPrediction(selectedFile);
+        }
+
+        async function performPrediction(file) {
+            // Sembunyikan hasil lama dan bersihkan audio
+            document.getElementById('result-section').style.display = 'none';
+            if (ttsAudio) {
+                ttsAudio.pause();
+                ttsAudio = null;
+            }
+            
+            // Tampilkan Stepper Flow
+            const stepperContainer = document.getElementById('process-stepper');
+            stepperContainer.style.display = 'block';
+            resetStepper();
+
+            // Setup Form Data
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                // Jalankan Step 1
+                await triggerStep('step-1', 400);
+                
+                // Jalankan Step 2
+                await triggerStep('step-2', 600);
+                
+                // Jalankan Step 3
+                await triggerStep('step-3', 500);
+
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                // Jalankan Step 4 & 5
+                await triggerStep('step-4', 500);
+                await triggerStep('step-5', 400);
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Jalankan Step 6
+                    await triggerStep('step-6', 500);
+                    
+                    // Sembunyikan stepper setelah jeda singkat
+                    setTimeout(() => {
+                        stepperContainer.style.display = 'none';
+                        showResults(data);
+                    }, 500);
+                } else {
+                    stepperContainer.style.display = 'none';
+                    alert("Prediksi gagal: " + data.detail);
+                }
+            } catch (err) {
+                console.error("Gagal melakukan prediksi:", err);
+                stepperContainer.style.display = 'none';
+                alert("Terjadi kesalahan koneksi ke server.");
+            }
+        }
+
+        // Stepper animation helpers
+        function resetStepper() {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(`step-${i}`);
+                el.classList.remove('active', 'completed');
+            }
+        }
+
+        async function triggerStep(stepId, delay) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const el = document.getElementById(stepId);
+                    el.classList.add('active');
+                    
+                    // Tandai step sebelumnya selesai jika ada
+                    const stepNum = parseInt(stepId.split('-')[1]);
+                    if (stepNum > 1) {
+                        document.getElementById(`step-${stepNum - 1}`).classList.remove('active');
+                        document.getElementById(`step-${stepNum - 1}`).classList.add('completed');
+                    }
+                    resolve();
+                }, delay);
+            });
+        }
+
+        // --- Tampilan Hasil & custom Player ---
+
+        function showResults(data) {
+            document.getElementById('result-section').style.display = 'block';
+            
+            // Nama Kayu
+            document.getElementById('result-wood-name').innerText = "Kayu " + data.wood_name;
+            
+            // Kalimat Pemetaan
+            document.getElementById('result-sentence').innerText = data.sentence;
+            
+            // Confidence Score & Animate Circular Gauge
+            const confidenceVal = data.confidence;
+            document.getElementById('result-confidence').innerText = confidenceVal + "%";
+            
+            // Lingkaran SVG memiliki keliling (perimeter) = 2 * PI * 45 = 282.7 (kita set stroke-dasharray ke 283)
+            // Offset ditentukan oleh persentase
+            const circle = document.getElementById('confidence-circle');
+            const radius = 45;
+            const circumference = 2 * Math.PI * radius;
+            const strokeOffset = circumference - (confidenceVal / 100) * circumference;
+            
+            // Berikan jeda agar transisi transparan ke visualisasi terlihat beranimasi
+            setTimeout(() => {
+                circle.style.strokeDashoffset = strokeOffset;
+            }, 100);
+
+            // 3 Prediksi Teratas
+            const topListContainer = document.getElementById('top-predictions-list');
+            topListContainer.innerHTML = '';
+            
+            if (data.top_predictions && data.top_predictions.length > 0) {
+                data.top_predictions.forEach((pred, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'top-prediction-item';
+                    
+                    item.innerHTML = `
+                        <span class="prediction-label">Kayu ${pred.wood_name}</span>
+                        <div class="prediction-bar-wrapper">
+                            <div class="prediction-bar prediction-bar-${index + 1}" id="pred-bar-${index}"></div>
+                        </div>
+                        <span class="prediction-percentage">${pred.confidence}%</span>
+                    `;
+                    
+                    topListContainer.appendChild(item);
+                    
+                    // Trigger animation width
+                    setTimeout(() => {
+                        const bar = document.getElementById(`pred-bar-${index}`);
+                        if (bar) {
+                            bar.style.width = pred.confidence + '%';
+                        }
+                    }, 150);
+                });
+            }
+
+            // Inisialisasi Audio Respons TTS
+            ttsAudio = new Audio(data.audio_url);
+            
+            ttsAudio.addEventListener('play', () => {
+                document.getElementById('custom-player').classList.add('playing');
+                document.getElementById('play-pause-icon').innerHTML = '<i class="fa-solid fa-pause"></i>';
+                document.getElementById('player-status').innerText = "Memutar suara respons...";
+            });
+            
+            ttsAudio.addEventListener('pause', () => {
+                document.getElementById('custom-player').classList.remove('playing');
+                document.getElementById('play-pause-icon').innerHTML = '<i class="fa-solid fa-play"></i>';
+                document.getElementById('player-status').innerText = "Suara respons dijeda";
+            });
+
+            ttsAudio.addEventListener('ended', () => {
+                document.getElementById('custom-player').classList.remove('playing');
+                document.getElementById('play-pause-icon').innerHTML = '<i class="fa-solid fa-play"></i>';
+                document.getElementById('player-status').innerText = "Selesai mendengarkan";
+            });
+
+            // Putar secara otomatis (Auto play)
+            ttsAudio.play().catch(e => {
+                // Peramban sering memblokir pemutaran audio otomatis tanpa interaksi pengguna awal
+                document.getElementById('player-status').innerText = "Klik play untuk mendengarkan";
+                console.log("Auto-play diblokir oleh browser, butuh interaksi pengguna:", e);
+            });
+        }
+
+        // Custom Player Control
+        function togglePlayPause() {
+            if (!ttsAudio) return;
+            
+            if (ttsAudio.paused) {
+                ttsAudio.play();
+            } else {
+                ttsAudio.pause();
+            }
+        }
+
+        function replayAudio() {
+            if (!ttsAudio) return;
+            ttsAudio.currentTime = 0;
+            ttsAudio.play();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+tensorflow
+librosa
+soundfile
+pydub
+gTTS
+numpy
