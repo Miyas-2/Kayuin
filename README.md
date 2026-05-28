@@ -128,4 +128,4 @@ Notebook: `train_tubes.ipynb`
 
 ## Lisensi
 
-Tambahkan lisensi sesuai kebutuhan (misalnya MIT) jika proyek ini akan dipublikasikan.
+----
